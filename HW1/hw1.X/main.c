@@ -23,11 +23,11 @@
 #pragma config FWDTWINSZ = 11 // wdt window at 25%
 
 // DEVCFG2 - get the CPU clock to 48MHz
-#pragma config FPLLIDIV = x // divide input clock to be in range 4-5MHz
-#pragma config FPLLMUL = x // multiply clock after FPLLIDIV
-#pragma config FPLLODIV = x // divide clock after FPLLMUL to get 48MHz
-#pragma config UPLLIDIV = x // divider for the 8MHz input clock, then multiply by 12 to get 48MHz for USB
-#pragma config UPLLEN = x // USB clock on
+#pragma config FPLLIDIV = 001 // divide input clock to be in range 4-5MHz (8 MHz clock -> divde by 2)
+#pragma config FPLLMUL = 111 // multiply clock after FPLLIDIV (24x multiplier -> 96 MHz)
+#pragma config FPLLODIV = 001 // divide clock after FPLLMUL to get 48MHz (2x divider -> 48 MHz)
+#pragma config UPLLIDIV = 001 // divider for the 8MHz input clock, then multiply by 12 to get 48MHz for USB
+#pragma config UPLLEN = 0 // USB clock on
 
 // DEVCFG3
 #pragma config USERID = 0 // some 16bit userid, doesn't matter what
