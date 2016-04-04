@@ -10,17 +10,17 @@
 #pragma config CP = 1 // no code protect
 
 // DEVCFG1
-#pragma config FNOSC = x // use primary oscillator with pll
-#pragma config FSOSCEN = x // turn off secondary oscillator
-#pragma config IESO = x // no switching clocks
-#pragma config POSCMOD = x // high speed crystal mode
-#pragma config OSCIOFNC = x // free up secondary osc pins
-#pragma config FPBDIV = x // divide CPU freq by 1 for peripheral bus clock
-#pragma config FCKSM = x // do not enable clock switch
-#pragma config WDTPS = x // slowest wdt
-#pragma config WINDIS = x // no wdt window
-#pragma config FWDTEN = x // wdt off by default
-#pragma config FWDTWINSZ = x // wdt window at 25%
+#pragma config FNOSC = 011 // use primary oscillator with pll
+#pragma config FSOSCEN = 0 // turn off secondary oscillator
+#pragma config IESO = 0 // no switching clocks
+#pragma config POSCMOD = 10 // high speed crystal mode
+#pragma config OSCIOFNC = 1  // free up secondary osc pins
+#pragma config FPBDIV = 00 // divide CPU freq by 1 for peripheral bus clock
+#pragma config FCKSM = 10 // do not enable clock switch
+#pragma config WDTPS = 10100 // slowest wdt
+#pragma config WINDIS = 1 // no wdt window
+#pragma config FWDTEN = 0 // wdt off by default
+#pragma config FWDTWINSZ = 11 // wdt window at 25%
 
 // DEVCFG2 - get the CPU clock to 48MHz
 #pragma config FPLLIDIV = x // divide input clock to be in range 4-5MHz
