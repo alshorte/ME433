@@ -51,8 +51,8 @@ unsigned char spi_io(unsigned char o) {
 // I2C SETUP AND FUNCTIONS
 void i2c2_init(){
   // some initialization function to set the right speed setting
-   I2C2BRG = some number for 100kHz; // I2CBRG = [1/(2*Fsck) - PGD]*Pblck - 2 
-                                    // look up PGD for your PIC32
+   I2C2BRG = 233; // I2CBRG = [1/(2*Fsck) - PGD]*Pblck - 2 
+                                    //FSCK = 100 kHz (or 400kHz) PGD = 104 ns PBLCK = 48MHz
   I2C2CONbits.ON = 1;               // turn on the I2C2 module
 
   // initialize PIC pins as I2C
@@ -62,14 +62,7 @@ void i2c2_init(){
 
 }
 
-void expander_init(){
-    // initialize pins G0 - G3  as outputs
-    // initialize pins G4 - G7 as inputs
-    
-      
-}
-
-// Start a transmission on the I2C bus
+// general i2c send/receive functions
 void i2c_master_start(void) {
     I2C2CONbits.SEN = 1;            // send the start bit
     while(I2C2CONbits.SEN) { ; }    // wait for the start bit to be sent
@@ -104,6 +97,34 @@ void i2c_master_ack(int val) {        // sends ACK = 0 (slave should send anothe
 void i2c_master_stop(void) {          // send a STOP:
   I2C2CONbits.PEN = 1;                // comm is complete and master relinquishes bus
   while(I2C2CONbits.PEN) { ; }        // wait for STOP to complete
+}
+
+// i2C functions for our code
+void i2c_write(unsigned char reg, unsigned char data){ // should these be chars????
+    i2c_master_start();                     // Begin the start sequence
+    i2c_master_send(SLAVE_ADDR << 1);       // send the slave address, left shifted by 1, 
+    i2c_master_send(reg);       // register you want to change
+    i2c_master_send(data);         // what you want it to be
+    i2c_master_stop();
+}
+
+unsigned char i2c_read(unsigned char reg){ 
+    i2c_master_start();                     // Begin the start sequence
+    i2c_master_send(SLAVE_ADDR << 1);       // send the slave address, left shifted by 1, 
+    i2c_master_send(reg);       // register you want to change
+    i2c_master_restart();
+    i2c_master_send(SLAVE_ADDR << 1 |1);       // send the slave address, left shifted by 1, 
+    i2c_master_recv();
+    i2c_master_ack(1);
+    i2c_master_stop();
+}
+
+void expander_init(){
+    // initialize pins G0 - G3  as outputs
+    // initialize pins G4 - G7 as inputs
+    unsigned char ex_val = 0b 11110000;
+    unsigned char reg = 0; // IODIR register sets pins to me inputs or outputs
+    i2c_write(reg, ex_val); // send desired expander values to set input and ouput pins via IODIR
 }
 
 

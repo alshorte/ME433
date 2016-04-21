@@ -3,9 +3,9 @@
 #include <math.h>     // add math so you can use sine
 
 #define NUMPTS 100       // number of point in wave
-#define SLAVE_ADDR 0x32 // for i2c
 
-void setVoltage(char channel, char voltage);
+
+void setVoltage(char channel, unsigned char voltage);
 void setExpander(char pin, char level);
 char getExpander();
 
@@ -20,7 +20,7 @@ int main(void) {
     __builtin_disable_interrupts();
         //i2c_slave_setup(SLAVE_ADDR);              // init I2C5, which we use as a slave 
                                                    //  (comment out if slave is on another pic)
-        i2c_master_setup();                       // init I2C2, which we use as a master
+        //i2c_master_setup();                       // init I2C2, which we use as a master
     __builtin_mtc0(_CP0_CONFIG, _CP0_CONFIG_SELECT, 0xa4210583);
 
     // 0 data RAM access wait states
@@ -45,7 +45,7 @@ int main(void) {
     for(i = 0; i<NUMPTS; i++){
         
         // wave amp < 255  
-        SWave[i] = (unsigned char) 127*sin(i*3.14/NUMPTS) + 127;
+        SWave[i] = (unsigned char) 127*sin(2*i*3.14/NUMPTS) + 127;
         TWave[i] = i;  
     }
     
@@ -66,25 +66,7 @@ int main(void) {
                 ; // wait 1 ms
             }
         }
-        
-        // I2C IO Expander Function
-        i2c_master_start();                     // Begin the start sequence
-        i2c_master_send(SLAVE_ADDR << 1);       // send the slave address, left shifted by 1, 
-                                                // which clears bit 0, indicating a write
-        i2c_master_send(master_write0);         // send a byte to the slave       
-        i2c_master_send(master_write1);         // send another byte to the slave
-        i2c_master_restart();                   // send a RESTART so we can begin reading 
-        i2c_master_send((SLAVE_ADDR << 1) | 1); // send slave address, left shifted by 1,
-                                                // and then a 1 in lsb, indicating read
-        master_read0 = i2c_master_recv();       // receive a byte from the bus
-        i2c_master_ack(0);                      // send ACK (0): master wants another byte!
-        master_read1 = i2c_master_recv();       // receive another byte from the bus
-        i2c_master_ack(1);                      // send NACK (1):  master needs no more bytes
-        i2c_master_stop();                      // send STOP:  end transmission, give up bus
-
-        ++master_write0;                        // change the data the master sends
-        ++master_write1;
-        
+     
     }
         
     return 0;
