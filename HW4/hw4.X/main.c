@@ -10,17 +10,14 @@ void setExpander(char pin, char level);
 char getExpander();
 
 int main(void) {
-    // initialize variables for i2c
-    char buf[100] = {};                       // buffer for sending messages to the user
-    unsigned char master_write0 = 0xCD;       // first byte that master writes
-    unsigned char master_write1 = 0x91;       // second byte that master writes
-    unsigned char master_read0  = 0x00;       // first received byte
-    unsigned char master_read1  = 0x00;       // second received byte
+    unsigned char button_status;  // initialize variable for i2c read
+    unsigned char reg; // initialize variable for i2c register
+    unsigned char pin; // initialize variable to set output pin to
 
     __builtin_disable_interrupts();
-        //i2c_slave_setup(SLAVE_ADDR);              // init I2C5, which we use as a slave 
-                                                   //  (comment out if slave is on another pic)
-        //i2c_master_setup();                       // init I2C2, which we use as a master
+        spi1_init(); // initialize SPI
+        i2c2_init(); // initialize I2C
+        expander_init(); // initialize pin expander inputs and outputs
     __builtin_mtc0(_CP0_CONFIG, _CP0_CONFIG_SELECT, 0xa4210583);
 
     // 0 data RAM access wait states
@@ -32,9 +29,7 @@ int main(void) {
     // disable JTAG to get pins back
     DDPCONbits.JTAGEN = 0;
     
-    spi1_init(); // initialize SPI
-    i2c2_init(); // initialize I2C
-    expander_init(); // initialize pin expander inputs and outputs
+    
     
     // make waveforms for SPI DAC
     unsigned char SWave[NUMPTS];      // initialize array of sine wave points
@@ -66,7 +61,21 @@ int main(void) {
                 ; // wait 1 ms
             }
         }
-     
+        
+        // I2C IO Expander
+        reg = 0x9; //GPIO register returns status of pins G0 - G7
+        button_status = i2c_read(reg)>>7; // check if button is pressed pin G7
+        
+        //if pressed turn on LED, if not turn off led :)
+        reg = 0xA; // OLAT register sets output value
+        if(button_status == 1){ // button not pressed
+            pin = 0; // set G0 to low (turn off led)
+            i2c_write(reg, pin);
+        }
+        if(button_status == 0){ // button is pressed
+            pin = 0; // set G0 to high (turn on led)
+            i2c_write(reg, pin);
+        }
     }
         
     return 0;

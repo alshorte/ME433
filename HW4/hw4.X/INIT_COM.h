@@ -2,7 +2,7 @@
 #define INIT_COM_H
 
 #define CS LATBbits.LATB15 // chip select pin
-#define SLAVE_ADDR 0x32 // slave address for i2c
+#define SLAVE_ADDR 0b0100000 // slave address for i2c
 
 // spi function prototypes
 void spi_init();

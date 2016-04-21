@@ -122,7 +122,7 @@ unsigned char i2c_read(unsigned char reg){
 void expander_init(){
     // initialize pins G0 - G3  as outputs
     // initialize pins G4 - G7 as inputs
-    unsigned char ex_val = 0b 11110000;
+    unsigned char ex_val = 0b11110000;
     unsigned char reg = 0; // IODIR register sets pins to me inputs or outputs
     i2c_write(reg, ex_val); // send desired expander values to set input and ouput pins via IODIR
 }
