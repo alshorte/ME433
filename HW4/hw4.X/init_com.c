@@ -1,9 +1,10 @@
 #include<xc.h>           // processor SFR definitions
 #include "INIT_COM.h"
 
-
+//******************************************************************//
+//SPI SETUP AND FUNCTIONS
 // initialize spi4 and the ram module --> edit as apropriate for our case
-void spi_init() {
+void spi1_init() {
   
   // the chip select pin is used by the sram to indicate
   // when a command is beginning (clear CS to low) and when it
@@ -35,28 +36,6 @@ void spi_init() {
   spi_io(0x41);             // sequential mode (mode = 0b01), hold disabled (hold = 0)
   CS = 1;                   // finish the command
 }
-/*
-void i2c_init(){
-	// some initialization function to set the right speed setting
-  char buf[100] = {};                       // buffer for sending messages to the user
-  unsigned char master_write0 = 0xCD;       // first byte that master writes
-  unsigned char master_write1 = 0x91;       // second byte that master writes
-  unsigned char master_read0  = 0x00;       // first received byte
-  unsigned char master_read1  = 0x00;       // second received byte
-
-  // some initialization function to set the right speed setting
-  Startup(); 
-  __builtin_disable_interrupts();
-  i2c_slave_setup(SLAVE_ADDR);              // init I2C5, which we use as a slave 
-                                            //  (comment out if slave is on another pic)
-  i2c_master_setup();                       // init I2C2, which we use as a master
-  __builtin_enable_interrupts();
-}
-
-void expander_init(){
-
-}
- **/
 
 // send a byte via spi and return the response
 unsigned char spi_io(unsigned char o) {
@@ -68,5 +47,63 @@ unsigned char spi_io(unsigned char o) {
 }
 
 
+//*********************************************************************//
+// I2C SETUP AND FUNCTIONS
+void i2c2_init(){
+  // some initialization function to set the right speed setting
+   I2C2BRG = some number for 100kHz; // I2CBRG = [1/(2*Fsck) - PGD]*Pblck - 2 
+                                    // look up PGD for your PIC32
+  I2C2CONbits.ON = 1;               // turn on the I2C2 module
+
+  // initialize PIC pins as I2C
+  ANSELBbits.ANSB2 = 0; // Turn off analog on B2 so it can be used for SDA2
+  ANSELBbits.ANSB3 = 0; // turn off analog on B3 so it can be used for SCL2
+  
+
+}
+
+void expander_init(){
+    // initialize pins G0 - G3  as outputs
+    // initialize pins G4 - G7 as inputs
+    
+      
+}
+
+// Start a transmission on the I2C bus
+void i2c_master_start(void) {
+    I2C2CONbits.SEN = 1;            // send the start bit
+    while(I2C2CONbits.SEN) { ; }    // wait for the start bit to be sent
+}
+
+void i2c_master_restart(void) {     
+    I2C2CONbits.RSEN = 1;           // send a restart 
+    while(I2C2CONbits.RSEN) { ; }   // wait for the restart to clear
+}
+
+void i2c_master_send(unsigned char byte) { // send a byte to slave
+  I2C2TRN = byte;                   // if an address, bit 0 = 0 for write, 1 for read
+  while(I2C2STATbits.TRSTAT) { ; }  // wait for the transmission to finish
+  if(I2C2STATbits.ACKSTAT) {        // if this is high, slave has not acknowledged
+    // ("I2C2 Master: failed to receive ACK\r\n");
+  }
+}
+
+unsigned char i2c_master_recv(void) { // receive a byte from the slave
+    I2C2CONbits.RCEN = 1;             // start receiving data
+    while(!I2C2STATbits.RBF) { ; }    // wait to receive the data
+    return I2C2RCV;                   // read and return the data
+}
+
+void i2c_master_ack(int val) {        // sends ACK = 0 (slave should send another byte)
+                                      // or NACK = 1 (no more bytes requested from slave)
+    I2C2CONbits.ACKDT = val;          // store ACK/NACK in ACKDT
+    I2C2CONbits.ACKEN = 1;            // send ACKDT
+    while(I2C2CONbits.ACKEN) { ; }    // wait for ACK/NACK to be sent
+}
+
+void i2c_master_stop(void) {          // send a STOP:
+  I2C2CONbits.PEN = 1;                // comm is complete and master relinquishes bus
+  while(I2C2CONbits.PEN) { ; }        // wait for STOP to complete
+}
 
 
