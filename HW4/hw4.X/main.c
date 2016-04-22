@@ -4,10 +4,10 @@
 
 #define NUMPTS 100       // number of point in wave
 
-
+// function prototypes
 void setVoltage(char channel, unsigned char voltage);
 void setExpander(char pin, char level);
-char getExpander();
+char getExpander(void);
 
 int main(void) {
     unsigned char button_status;  // initialize variable for i2c read
@@ -15,9 +15,7 @@ int main(void) {
     unsigned char pin; // initialize variable to set output pin to
 
     __builtin_disable_interrupts();
-        spi1_init(); // initialize SPI
-        i2c2_init(); // initialize I2C
-        expander_init(); // initialize pin expander inputs and outputs
+        
     __builtin_mtc0(_CP0_CONFIG, _CP0_CONFIG_SELECT, 0xa4210583);
 
     // 0 data RAM access wait states
@@ -29,7 +27,11 @@ int main(void) {
     // disable JTAG to get pins back
     DDPCONbits.JTAGEN = 0;
     
+    __builtin_enable_interrupts();
     
+    spi1_init(); // initialize SPI
+    i2c2_init(); // initialize I2C
+    expander_init(); // initialize pin expander inputs and outputs
     
     // make waveforms for SPI DAC
     unsigned char SWave[NUMPTS];      // initialize array of sine wave points
@@ -55,27 +57,29 @@ int main(void) {
             // triangle wave sent to channel B
             setVoltage(1,TWave[j]);
             
-            // add 1 ms delay
+            // I2C IO Expander
+            reg = 0x9; //GPIO register returns status of pins G0 - G7
+            button_status = i2c_read(reg)>>7; // check if button is pressed pin G7
+
+            //if pressed turn on LED, if not turn off led :)
+            reg = 0xA; // OLAT register sets output value
+            if(button_status == 1){ // button not pressed
+                pin = 0; // set G0 to low (turn off led)
+                i2c_write(reg, pin);
+            }
+            if(button_status == 0){ // button is pressed
+                pin = 1; // set G0 to high (turn on led)
+                i2c_write(reg, pin);
+            }
+
             _CP0_SET_COUNT(0);   // set core timer to 0
-            while (_CP0_GET_COUNT() < 24004){ // running at 48 MHz, Core timer at 24 MHZ
-                ; // wait 1 ms
+            while (_CP0_GET_COUNT() < 24004){ // running at 48 MHz, Core timer at 24 MHZ delay 1ms
+                
+                ;
             }
         }
+
         
-        // I2C IO Expander
-        reg = 0x9; //GPIO register returns status of pins G0 - G7
-        button_status = i2c_read(reg)>>7; // check if button is pressed pin G7
-        
-        //if pressed turn on LED, if not turn off led :)
-        reg = 0xA; // OLAT register sets output value
-        if(button_status == 1){ // button not pressed
-            pin = 0; // set G0 to low (turn off led)
-            i2c_write(reg, pin);
-        }
-        if(button_status == 0){ // button is pressed
-            pin = 0; // set G0 to high (turn on led)
-            i2c_write(reg, pin);
-        }
     }
         
     return 0;
