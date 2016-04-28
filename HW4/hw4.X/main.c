@@ -1,5 +1,6 @@
 #include <xc.h>           // processor SFR definitions
 #include "INIT_COM.h" // initializes SPI and I2C
+#include "DEV_CONFIG.h" // configure pic
 #include <math.h>     // add math so you can use sine
 
 #define NUMPTS 100       // number of point in wave
