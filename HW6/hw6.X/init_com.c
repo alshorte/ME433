@@ -12,7 +12,7 @@ void spi1_init() {
   ANSELBbits.ANSB15 = 0; // Turn off analog on B15 so it can be used for CS
   ANSELBbits.ANSB14 = 0; // turn off analog on B14 so it can be used for SCK1
   TRISBbits.TRISB15 = 0; // set up the chip select pin as an output
-  CS = 1; // chip select set high (no command being issued atm)
+  CS = 0; // chip select set high (no command being issued atm)
   
   RPB13Rbits.RPB13R = 0b0011; //set SDO to be pin RPB13
   SDI1Rbits.SDI1R = 0b0100; // set SDI to be pin RPB8
@@ -109,10 +109,10 @@ void i2c_write(unsigned char reg, unsigned char val){
 unsigned char i2c_read(unsigned char reg){ 
     unsigned char r;
     i2c_master_start();                     // Begin the start sequence
-    i2c_master_send(SLAVE_ADDR << 1);       // send the slave address, left shifted by 1, 
+    i2c_master_send(SLAVE_ADDR2 << 1);       // send the slave address, left shifted by 1, 
     i2c_master_send(reg);                   // register you want to read from
     i2c_master_restart();
-    i2c_master_send(SLAVE_ADDR << 1 | 1);    // send the slave address, left shifted by 1, 
+    i2c_master_send(SLAVE_ADDR2 << 1 | 1);    // send the slave address, left shifted by 1, 
     r = i2c_master_recv();
     i2c_master_ack(1);
     i2c_master_stop();
@@ -127,7 +127,7 @@ void expander_init(void){
     i2c_write(reg, ex_io); // send desired expander io settings to set input and output pins via IODIR
 }
 
-unsigned short i2c_IMUread(unsigned char regL, unsigned char regH){ 
+short i2c_IMUread(unsigned char regL, unsigned char regH){ 
     unsigned char rL, rH;                   // temp variables to store received data
     unsigned short r = 0b0000000000000000;  // variable to return data
     

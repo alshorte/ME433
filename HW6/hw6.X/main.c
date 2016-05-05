@@ -1,6 +1,41 @@
 #include <xc.h>           // processor SFR definitions
 #include "INIT_COM.h" // initializes SPI and I2C
 //#include "DEV_CONFIG.h" //configure pic
+// DEVCFG0
+#pragma config DEBUG = 1 // no debugging
+#pragma config JTAGEN = 0 // no jtag
+#pragma config ICESEL = 11 // use PGED1 and PGEC1
+#pragma config PWP = 111111111 // no write protect
+#pragma config BWP = 0 // no boot write protect
+#pragma config CP = 1 // no code protect
+
+// DEVCFG1
+#pragma config FNOSC = 011 // use primary oscillator with pll
+#pragma config FSOSCEN = 0 // turn off secondary oscillator
+#pragma config IESO = 0 // no switching clocks
+#pragma config POSCMOD = 10 // high speed crystal mode
+#pragma config OSCIOFNC = 1  // free up secondary osc pins
+#pragma config FPBDIV = 00 // divide CPU freq by 1 for peripheral bus clock
+#pragma config FCKSM = 10 // do not enable clock switch
+#pragma config WDTPS = 10100 // slowest wdt
+#pragma config WINDIS = 1 // no wdt window
+#pragma config FWDTEN = 0 // wdt off by default
+#pragma config FWDTWINSZ = 11 // wdt window at 25%
+
+// DEVCFG2 - get the CPU clock to 48MHz
+#pragma config FPLLIDIV = 001 // divide input clock to be in range 4-5MHz (8 MHz clock -> divde by 2)
+#pragma config FPLLMUL = 111 // multiply clock after FPLLIDIV (24x multiplier -> 96 MHz)
+#pragma config FPLLODIV = 001 // divide clock after FPLLMUL to get 48MHz (2x divider -> 48 MHz)
+#pragma config UPLLIDIV = 001 // divider for the 8MHz input clock, then multiply by 12 to get 48MHz for USB
+#pragma config UPLLEN = 0 // USB clock on
+
+// DEVCFG3
+#pragma config USERID = 0 // some 16bit userid, doesn't matter what
+#pragma config PMDL1WAY = 0 // allow multiple reconfigurations
+#pragma config IOL1WAY = 0 // allow multiple reconfigurations
+#pragma config FUSBIDIO = 1 // USB pins controlled by USB module
+#pragma config FVBUSONIO = 1 // USB BUSON controlled by USB module
+
 
 // registers  to read from for LSM6DS33
 #define regTL 0x20     // temp output register. L and H express 16 bit word in 2s comp
@@ -48,14 +83,15 @@ int main(void){
       spi1_init(); // not actually using, I just connected the CS to an LED to test is WHOAMI is working
 
       while(1){
-          /*
+          
+          unsigned char reg;
           reg = 0x0F; //WHOAMI register
           whoami_status = i2c_read(reg); // check if who am I is 0b01101001
           
           if(whoami_status == 0b01101001){ // whoami is expected value 
                 CS = 1; // set CS to high to turn on LED
             }
-          */
+          
           
           _CP0_SET_COUNT(0);   // set core timer to 0
             temp = i2c_IMUread(regTL, regTH);     // read temperature of LSM6DS33
@@ -67,11 +103,15 @@ int main(void){
             accZ = i2c_IMUread(regAZL, regAZH);   // read Z acceleration of LSM6DS33
 
             // output the X acceleration on OC1 and the Y acceleration on OC2
-            OC1RS = accX;
-            OC2RS = accY;
+            float tempX, tempY;
+            tempX = (accX/32000)*PR2; // scale to max size of duty cycle
+            tempY = (accY/32000)*PR2;
+            OC1RS = tempX;
+            OC2RS = tempY;
             while (_CP0_GET_COUNT() < 480080){ // running at 48 MHz, Core timer at 24 MHZ, delay 20 ms --> read every 50Hz
                 ;
             }
+           
       }
       return;
 }
@@ -82,12 +122,12 @@ void oc_init(){
     // OC1 can be pins A0 B3 B4 B15 B7 
     // OC2 can be pins A1 B5 B1 B11 B8 A8 A9
     // set pin XX to be OC1 and pin XX to be OC2
-    ANSELAbits.ANSA0 = 0;       // Turn off analog on A0 so it can be used for OC1
+    ANSELAbits.ANSA0 = 0;       // Turn off analog on A0 so it can be used for OC1 --> need to change my PWM pins
     ANSELAbits.ANSA1 = 0;       // turn off analog on A1 so it can be used for OC2
     RPA0Rbits.RPA0R = 0b0101;   //set OC1 to be pin A0
     RPA1Rbits.RPA1R = 0b0101;   //set OC2 to be pin A1
     
-    // need to change these values.... this is from ME333 homework
+    // set up Timer and PWM
     T2CONbits.TCKPS = 4;        // Timer2 prescaler N=16 (1:16)
     PR2 = 4999;                 // period = (PR2+1) * N * 12.5 ns = 1ms, 1kHz
     TMR2 = 0;                   // initial TMR2 count is 0

@@ -19,7 +19,7 @@ void i2c_master_stop(void);
 void i2c_write(unsigned char reg, unsigned char val);
 unsigned char i2c_read(unsigned char reg);
 void expander_init(void);
-unsigned short i2c_IMUread(unsigned char regL, unsigned char regH);
+short i2c_IMUread(unsigned char regL, unsigned char regH);
 
 #endif
 
