@@ -1,6 +1,5 @@
 // code for ILI9163C on the PIC32
 // adapted from https://github.com/sumotoy/TFT_ILI9163C/blob/master/TFT_ILI9163C.cpp
-
 #ifndef ILI9163C_H__
 #define ILI9163C_H__
 

@@ -28,17 +28,18 @@ int main(void){
     LCD_init();
     LCD_clearScreen(WHITE);   // clear screen to white
     
-    
     // initialize x, y position to write to?
     char x = 28;
     char y = 32;
     
     // hard code something character array sprintf
     int n = 1337;       // numerical variable to print
-    sprintf(msg,"Hello world %d! /n",n);
+    sprintf(msg,"Hello world %d!",n);
     
     // write to screen
+    //draw_character('A',x,y);
     draw_string(msg, x, y);
+    
 }
 
 void draw_character(unsigned char c, unsigned char x, unsigned char y){
@@ -49,15 +50,14 @@ void draw_character(unsigned char c, unsigned char x, unsigned char y){
     
     for (j = 0; j < 5; j++) {       // which column
         draw = ASCII[c-0x20][j]; // specify the byte
-        for(i = 0; i < 8; i++){     // which bit in that column
-            
-            if(draw >> (7-i)&1 == 0){ // shift draw to look at only one pixel
-                colour = WHITE;         // set colour to white
+        for(i = 0; i < 8; i++){     // which bit in that column   
+            if((draw >> i)&1 == 1){ // shift draw to look at only one pixel 
+                colour = RED;         // set colour to RED
             }
-            else{
-                colour = BLACK;         // set colour to black
+            else {
+                colour = WHITE;         // set colour to WHITE
                 }
-            // check if pixel exists before writing
+            // check if pixel exists before writing???
             LCD_drawPixel(x+j,y+i,colour);  
         }
     }   

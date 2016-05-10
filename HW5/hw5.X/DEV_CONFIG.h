@@ -14,7 +14,7 @@
 #pragma config FSOSCEN = OFF // turn off secondary oscillator
 #pragma config IESO = OFF // no switching clocks
 #pragma config POSCMOD = HS // high speed crystal mode
-#pragma config OSCIOFNC = ON  // free up secondary osc pins
+#pragma config OSCIOFNC = OFF  // free up secondary osc pins
 #pragma config FPBDIV = DIV_1 // divide CPU freq by 1 for peripheral bus clock
 #pragma config FCKSM = CSDCMD // do not enable clock switch
 #pragma config WDTPS = PS1048576 // slowest wdt
@@ -31,8 +31,8 @@
 
 // DEVCFG3
 #pragma config USERID = 0 // some 16bit userid, doesn't matter what
-#pragma config PMDL1WAY = OFF // allow multiple reconfigurations
-#pragma config IOL1WAY = OFF // allow multiple reconfigurations
+#pragma config PMDL1WAY = ON // allow multiple reconfigurations
+#pragma config IOL1WAY = ON // allow multiple reconfigurations
 #pragma config FUSBIDIO = ON // USB pins controlled by USB module
 #pragma config FVBUSONIO = ON // USB BUSON controlled by USB module
 
