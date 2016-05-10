@@ -3,10 +3,11 @@
 #include "ILI9163C.h"       //LCD functions
 
 // function prototypes
-void draw_character(unsigned char c);
-void draw_string();
+void draw_character(unsigned char c, unsigned char x, unsigned char y);
+void draw_string(unsigned char *m, unsigned char x, unsigned char y);
 
 int main(void){
+    char msg[100];      // initialize string array
     
     __builtin_disable_interrupts();
 
@@ -25,48 +26,48 @@ int main(void){
       
     SPI1_init();              // initialize SPI and LCD
     LCD_init();
-    LCD_clearScreen(0);   // clear screen to white
+    LCD_clearScreen(WHITE);   // clear screen to white
+    
+    
     // initialize x, y position to write to?
+    char x = 28;
+    char y = 32;
     
-    // receive from user what to write to screen
-    
+    // hard code something character array sprintf
+    int n = 1337;       // numerical variable to print
+    sprintf(msg,"Hello world %d! /n",n);
     
     // write to screen
-    draw_string(msg);
-      
-
+    draw_string(msg, x, y);
 }
 
-void draw_character(unsigned char c){
+void draw_character(unsigned char c, unsigned char x, unsigned char y){
     unsigned short colour;
-    unsigned char = draw;
+    unsigned char draw;
+    char i = 0;
+    char j = 0;
     
-    // look up ASII character
-    draw = ASCII[desired character][];
-    
-    
-    for (j = 0; j < 4; j++) {       // which column
-        for(i = 0; i < 7; i++){     // which bit in that column
+    for (j = 0; j < 5; j++) {       // which column
+        draw = ASCII[c-0x20][j]; // specify the byte
+        for(i = 0; i < 8; i++){     // which bit in that column
             
-            if(draw[i][j] == 0){
-                colour = 0;         // set colour to white
+            if(draw >> (7-i)&1 == 0){ // shift draw to look at only one pixel
+                colour = WHITE;         // set colour to white
             }
             else{
-                colour = 1;         // set colour to black
+                colour = BLACK;         // set colour to black
                 }
-            LCD_drawPixel(x,y,colour);
-           
+            // check if pixel exists before writing
+            LCD_drawPixel(x+j,y+i,colour);  
         }
     }   
 }
 
-void draw_string(msg){
-    while(msg[q]!= 0){  // continue until reaching null character
-        draw_character(msg[q]);
-        // also send x, y position?
-        // increment x and y positions
-        x = x + 5;
-        y = y + 7;
+void draw_string(unsigned char *m, unsigned char x, unsigned char y){
+    char q = 0;         // initialize character counter
+    while(m[q]!= 0){  // continue until reaching null character
+        draw_character(m[q], x, y);
+        x = x + 5; // move one column over from last character
         q = q+1;
     }
 }

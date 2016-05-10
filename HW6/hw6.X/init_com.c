@@ -129,7 +129,7 @@ void expander_init(void){
 
 short i2c_IMUread(unsigned char regL, unsigned char regH){ 
     unsigned char rL, rH;                   // temp variables to store received data
-    unsigned short r = 0b0000000000000000;  // variable to return data
+    short r;  // variable to return data
     
     // read least significant byte
     i2c_master_start();                     // Begin the start sequence
@@ -152,8 +152,7 @@ short i2c_IMUread(unsigned char regL, unsigned char regH){
     i2c_master_stop();
     
     // save LSB and MSB into r to return
-    r |= rH << 8;   // shift rH to MSB of r
-    r |= rL;        // place rL in LSB of r
+    r = (rH << 8) | rL;   // shift rH to MSB of r, place rL in LSB of r
     return r;
 }
 

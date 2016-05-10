@@ -60,7 +60,7 @@ void oc_init(void);
 
 int main(void){
     unsigned char whoami_status;  // initialize variable for i2c read
-    unsigned short temp, gyroX, gyroY, gyroZ, accX, accY, accZ;     // initialize variables to store data read via I2C
+    short temp, gyroX, gyroY, gyroZ, accX, accY, accZ;     // initialize variables to store data read via I2C
     
     __builtin_disable_interrupts();
 
@@ -102,7 +102,7 @@ int main(void){
             accY = i2c_IMUread(regAYL, regAYH);   // read Y acceleration of LSM6DS33
             accZ = i2c_IMUread(regAZL, regAZH);   // read Z acceleration of LSM6DS33
 
-            // output the X acceleration on OC1 and the Y acceleration on OC2
+            // output the X acceleration on OC1 and the Y acceleration on OC2 --> get rid of this, send to LCD
             float tempX, tempY;
             tempX = (accX/32000)*PR2; // scale to max size of duty cycle
             tempY = (accY/32000)*PR2;
