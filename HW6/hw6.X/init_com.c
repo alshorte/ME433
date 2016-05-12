@@ -1,5 +1,6 @@
 #include<xc.h>           // processor SFR definitions
 #include "INIT_COM.h"
+#include "LCD.h"
 
 //******************************************************************//
 //SPI SETUP AND FUNCTIONS
@@ -37,7 +38,7 @@ void spi1_init() {
   CS = 1;                   // finish the command
 }
 
-// send a byte via spi and return the response
+/*// send a byte via spi and return the response
 unsigned char spi_io(unsigned char o) {
   SPI1BUF = o;                  //
   while(!SPI1STATbits.SPIRBF) { // wait to receive the byte
@@ -45,7 +46,7 @@ unsigned char spi_io(unsigned char o) {
   }
   return SPI1BUF;
 }
-
+*/
 
 //*********************************************************************//
 // I2C SETUP AND FUNCTIONS
@@ -127,6 +128,25 @@ void expander_init(void){
     i2c_write(reg, ex_io); // send desired expander io settings to set input and output pins via IODIR
 }
 
+void IMU_init(void){
+    unsigned char CTLR1_XL;
+    unsigned char CTLR2_G;
+    unsigned char XL_val;
+    unsigned char G_val;
+    
+    // turn on accelerometer
+    CTLR1_XL = 0x10;
+    XL_val = 0b10000000; // set to 1.66 kHz
+    i2c_write(CTLR1_XL, XL_val);
+            
+    // turn on gyroscope
+    CTLR2_G = 0x11;
+    G_val= 0b10000000;  // set to 1.66 kHz
+    i2c_write(CTLR2_G, G_val);
+    
+    // enable multiple read
+}
+
 short i2c_IMUread(unsigned char regL, unsigned char regH){ 
     unsigned char rL, rH;                   // temp variables to store received data
     short r;  // variable to return data
@@ -136,7 +156,7 @@ short i2c_IMUread(unsigned char regL, unsigned char regH){
     i2c_master_send(SLAVE_ADDR2 << 1);       // send the slave address, left shifted by 1, 
     i2c_master_send(regL);                   // register you want to read from
     i2c_master_restart();
-    i2c_master_send(SLAVE_ADDR2 << 1 |1);    // send the slave address, left shifted by 1, 
+    i2c_master_send((SLAVE_ADDR2 << 1) |1);    // send the slave address, left shifted by 1, 
     rL = i2c_master_recv();
     i2c_master_ack(1);
     i2c_master_stop();
@@ -151,7 +171,17 @@ short i2c_IMUread(unsigned char regL, unsigned char regH){
     i2c_master_ack(1);
     i2c_master_stop();
     
-    // save LSB and MSB into r to return
+    // debug
+    char x = 0;
+    char y = 0;
+    char msg[100];      // initialize string array
+    sprintf(msg,"rL: %d", rL);
+    draw_string(msg, x, y);           // send accY reading 
+    y = y + 8;    // shift down a line
+    sprintf(msg,"rH: %d", rH);
+    draw_string(msg, x, y);           // send accY reading
+    
+    
     r = (rH << 8) | rL;   // shift rH to MSB of r, place rL in LSB of r
     return r;
 }
