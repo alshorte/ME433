@@ -38,7 +38,6 @@ int main(void) {
     unsigned char SWave[NUMPTS];      // initialize array of sine wave points
     unsigned char TWave[NUMPTS];      // initialize array of triangle wave points
     
-    
     int i = 0; // initialize counter
     for(i = 0; i<NUMPTS; i++){
         
@@ -46,8 +45,7 @@ int main(void) {
         SWave[i] = (unsigned char) 127*sin(2*i*3.14/NUMPTS) + 127;
         TWave[i] = i;  
     }
-    
-    
+
     while(1) {
         // SPI DAC
         int j = 0; // initialize counter
@@ -60,17 +58,17 @@ int main(void) {
             
             // I2C IO Expander
             reg = 0x9; //GPIO register returns status of pins G0 - G7
-            button_status = i2c_read(reg)>>7; // check if button is pressed pin G7
+            button_status = i2c_read(reg, SLAVE_ADDR)>>7; // check if button is pressed pin G7
 
             //if pressed turn on LED, if not turn off led :)
             reg = 0xA; // OLAT register sets output value
             if(button_status == 1){ // button not pressed
                 pin = 0; // set G0 to low (turn off led)
-                i2c_write(reg, pin);
+                i2c_write(reg, pin, SLAVE_ADDR);
             }
             if(button_status == 0){ // button is pressed
                 pin = 1; // set G0 to high (turn on led)
-                i2c_write(reg, pin);
+                i2c_write(reg, pin, SLAVE_ADDR);
             }
 
             _CP0_SET_COUNT(0);   // set core timer to 0

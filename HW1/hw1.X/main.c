@@ -33,11 +33,12 @@ int main() {
         // remember the core timer runs at half the CPU speed
         
             _CP0_SET_COUNT(0);   // set core timer to 0
-            while (_CP0_GET_COUNT() < 12002){ // running at 48 MHz, Core timer at 24 MHZ
-                ; // wait 0.5 ms
+            while (_CP0_GET_COUNT() < 24004000){ // running at 48 MHz, Core timer at 24 MHZ
+                ; // wait 0.5 ms 12002
                 while(!PORTBbits.RB4) { 
                     ;
                } // Pin B4 is the button, low (FALSE) if pressed.
+                
             }
             LATAINV = 0b10000 ;  // toggle LED pin 4
     }

@@ -55,7 +55,7 @@ void i2c2_init(){
   ANSELBbits.ANSB2 = 0; // Turn off analog on B2 so it can be used for SDA2
   ANSELBbits.ANSB3 = 0; // turn off analog on B3 so it can be used for SCL2
   // some initialization function to set the right speed setting
-  I2C2BRG = 53; // I2CBRG = [1/(2*Fsck) - PGD]*Pblck - 2 
+  I2C2BRG = 233; // I2CBRG = [1/(2*Fsck) - PGD]*Pblck - 2 
                                     //FSCK = 100 kHz (or 400kHz) PGD = 104 ns PBLCK = 48MHz
   I2C2CONbits.ON = 1;               // turn on the I2C2 module
   
@@ -99,21 +99,21 @@ void i2c_master_stop(void) {          // send a STOP:
 }
 
 // i2C functions for our code
-void i2c_write(unsigned char reg, unsigned char val){ 
+void i2c_write(unsigned char reg, unsigned char val, unsigned char ADD){ 
     i2c_master_start();                     // Begin the start sequence
-    i2c_master_send(SLAVE_ADDR << 1);       // send the slave address, left shifted by 1, 
+    i2c_master_send(ADD << 1);       // send the slave address, left shifted by 1, 
     i2c_master_send(reg);       // register you want to change
     i2c_master_send(val);         // what you want it to be
     i2c_master_stop();
 }
 
-unsigned char i2c_read(unsigned char reg){ 
+unsigned char i2c_read(unsigned char reg, unsigned char ADD){ 
     unsigned char r;
     i2c_master_start();                     // Begin the start sequence
-    i2c_master_send(SLAVE_ADDR2 << 1);       // send the slave address, left shifted by 1, 
+    i2c_master_send(ADD << 1);       // send the slave address, left shifted by 1, 
     i2c_master_send(reg);                   // register you want to read from
     i2c_master_restart();
-    i2c_master_send(SLAVE_ADDR2 << 1 | 1);    // send the slave address, left shifted by 1, 
+    i2c_master_send(ADD << 1 | 1);    // send the slave address, left shifted by 1, 
     r = i2c_master_recv();
     i2c_master_ack(1);
     i2c_master_stop();
@@ -125,7 +125,7 @@ void expander_init(void){
     // initialize pins G4 - G7 as inputs
     unsigned char ex_io = 0b11110000;
     unsigned char reg = 0; // IODIR register sets pins to me inputs or outputs
-    i2c_write(reg, ex_io); // send desired expander io settings to set input and output pins via IODIR
+    i2c_write(reg, ex_io, SLAVE_ADDR); // send desired expander io settings to set input and output pins via IODIR
 }
 
 void IMU_init(void){
@@ -137,12 +137,12 @@ void IMU_init(void){
     // turn on accelerometer
     CTLR1_XL = 0x10;
     XL_val = 0b10000000; // set to 1.66 kHz
-    i2c_write(CTLR1_XL, XL_val);
+    i2c_write(CTLR1_XL, XL_val, SLAVE_ADDR2);
             
     // turn on gyroscope
     CTLR2_G = 0x11;
     G_val= 0b10000000;  // set to 1.66 kHz
-    i2c_write(CTLR2_G, G_val);
+    i2c_write(CTLR2_G, G_val, SLAVE_ADDR2);
     
     // enable multiple read
 }
@@ -170,17 +170,6 @@ short i2c_IMUread(unsigned char regL, unsigned char regH){
     rH = i2c_master_recv();
     i2c_master_ack(1);
     i2c_master_stop();
-    
-    // debug
-    char x = 0;
-    char y = 0;
-    char msg[100];      // initialize string array
-    sprintf(msg,"rL: %d", rL);
-    draw_string(msg, x, y);           // send accY reading 
-    y = y + 8;    // shift down a line
-    sprintf(msg,"rH: %d", rH);
-    draw_string(msg, x, y);           // send accY reading
-    
     
     r = (rH << 8) | rL;   // shift rH to MSB of r, place rL in LSB of r
     return r;

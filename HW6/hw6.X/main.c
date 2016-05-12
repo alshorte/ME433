@@ -61,7 +61,7 @@ int main(void){
         
         unsigned char reg;
         reg = 0x0F; //WHOAMI register
-        whoami_status = i2c_read(reg);    // check if who am I is 0b01101001
+        whoami_status = i2c_read(reg, SLAVE_ADDR2);    // check if who am I is 0b01101001
         sprintf(msg,"WhoAmI: %d",whoami_status);
         draw_string(msg, x, y);           // send whoami_status
 
@@ -71,7 +71,7 @@ int main(void){
                 CS = 1; // set CS to high to turn on LED
             }
            */
-          
+         
          // _CP0_SET_COUNT(0);   // set core timer to 0
         temp = i2c_IMUread(regTL, regTH);     // read temperature of LSM6DS33
         gyroX = i2c_IMUread(regGXL, regGXH);  // read pitch angular rate of LSM6DS33
@@ -80,7 +80,7 @@ int main(void){
         accX = i2c_IMUread(regAXL, regAXH);   // read X acceleration of LSM6DS33
         accY = i2c_IMUread(regAYL, regAYH);   // read Y acceleration of LSM6DS33
         accZ = i2c_IMUread(regAZL, regAZH);   // read Z acceleration of LSM6DS33
-            
+        
         sprintf(msg,"Temperature: %d",temp);
         draw_string(msg, x, y);           // send temperature reading
         y = y + 8;    // shift down a line

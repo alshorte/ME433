@@ -38,14 +38,14 @@ void spi1_init() {
 }
 
 // send a byte via spi and return the response
-unsigned char spi_io(unsigned char o) {
+/*unsigned char spi_io(unsigned char o) {
   SPI1BUF = o;                  //
   while(!SPI1STATbits.SPIRBF) { // wait to receive the byte
     ;
   }
   return SPI1BUF;
 }
-
+*/
 
 //*********************************************************************//
 // I2C SETUP AND FUNCTIONS
@@ -54,7 +54,7 @@ void i2c2_init(){
   ANSELBbits.ANSB2 = 0; // Turn off analog on B2 so it can be used for SDA2
   ANSELBbits.ANSB3 = 0; // turn off analog on B3 so it can be used for SCL2
   // some initialization function to set the right speed setting
-  I2C2BRG = 53; // I2CBRG = [1/(2*Fsck) - PGD]*Pblck - 2 
+  I2C2BRG = 233; // I2CBRG = [1/(2*Fsck) - PGD]*Pblck - 2 
                                     //FSCK = 100 kHz (or 400kHz) PGD = 104 ns PBLCK = 48MHz
   I2C2CONbits.ON = 1;               // turn on the I2C2 module
   
@@ -98,21 +98,21 @@ void i2c_master_stop(void) {          // send a STOP:
 }
 
 // i2C functions for our code
-void i2c_write(unsigned char reg, unsigned char val){ 
+void i2c_write(unsigned char reg, unsigned char val, unsigned char ADD){ 
     i2c_master_start();                     // Begin the start sequence
-    i2c_master_send(SLAVE_ADDR << 1);       // send the slave address, left shifted by 1, 
+    i2c_master_send(ADD << 1);       // send the slave address, left shifted by 1, 
     i2c_master_send(reg);       // register you want to change
     i2c_master_send(val);         // what you want it to be
     i2c_master_stop();
 }
 
-unsigned char i2c_read(unsigned char reg){ 
+unsigned char i2c_read(unsigned char reg, unsigned char ADD){ 
     unsigned char r;
     i2c_master_start();                     // Begin the start sequence
-    i2c_master_send(SLAVE_ADDR << 1);       // send the slave address, left shifted by 1, 
+    i2c_master_send(ADD << 1);       // send the slave address, left shifted by 1, 
     i2c_master_send(reg);                   // register you want to read from
     i2c_master_restart();
-    i2c_master_send(SLAVE_ADDR << 1 | 1);    // send the slave address, left shifted by 1, 
+    i2c_master_send(ADD << 1 | 1);    // send the slave address, left shifted by 1, 
     r = i2c_master_recv();
     i2c_master_ack(1);
     i2c_master_stop();
@@ -124,36 +124,5 @@ void expander_init(void){
     // initialize pins G4 - G7 as inputs
     unsigned char ex_io = 0b11110000;
     unsigned char reg = 0; // IODIR register sets pins to me inputs or outputs
-    i2c_write(reg, ex_io); // send desired expander io settings to set input and output pins via IODIR
+    i2c_write(reg, ex_io,SLAVE_ADDR); // send desired expander io settings to set input and output pins via IODIR
 }
-
-unsigned short i2c_IMUread(unsigned char regL, unsigned char regH){ 
-    unsigned char rL, rH;                   // temp variables to store received data
-    unsigned short r = 0b0000000000000000;  // variable to return data
-    
-    // read least significant byte
-    i2c_master_start();                     // Begin the start sequence
-    i2c_master_send(SLAVE_ADDR2 << 1);       // send the slave address, left shifted by 1, 
-    i2c_master_send(regL);                   // register you want to read from
-    i2c_master_restart();
-    i2c_master_send(SLAVE_ADDR2 << 1 |1);    // send the slave address, left shifted by 1, 
-    rL = i2c_master_recv();
-    i2c_master_ack(1);
-    i2c_master_stop();
-    
-    // read most significant byte -----------> DO I NEED TO STOP AND RESTART BETWEEN READING BYTES???
-    i2c_master_start();                     // Begin the start sequence
-    i2c_master_send(SLAVE_ADDR2 << 1);       // send the slave address, left shifted by 1, 
-    i2c_master_send(regH);                   // register you want to read from
-    i2c_master_restart();
-    i2c_master_send(SLAVE_ADDR2 << 1 |1);    // send the slave address, left shifted by 1, 
-    rH = i2c_master_recv();
-    i2c_master_ack(1);
-    i2c_master_stop();
-    
-    // save LSB and MSB into r to return
-    r |= rH << 8;   // shift rH to MSB of r
-    r |= rL;        // place rL in LSB of r
-    return r;
-}
-
