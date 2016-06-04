@@ -123,7 +123,7 @@ void oc_init(){
     
     // set up Timer and PWM
     T2CONbits.TCKPS = 4;        // Timer2 prescaler N=16 (1:16)
-    PR2 = 4999;                 // period = (PR2+1) * N * 12.5 ns = 1ms, 1kHz
+    PR2 = 2999;                 // period = (PR2+1) * N * 12.5 ns = 1ms, 1kHz
     TMR2 = 0;                   // initial TMR2 count is 0
     
     // set up OC1
