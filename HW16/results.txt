@@ -1,0 +1,14 @@
+My robot worked reasonably well, though there were some aspects that, given time to refine, would have resulted in much better performance.
+
+Android App
+Upon connection, the CDC app recognized the pic (app1.jpg).
+
+The camera app used three seekbars to set thresholds on red, green and blue colours (app2.jpg). This allows the app to be used to track any colour line. In code it was specified that in order for a pixel to be acceoted as part of the line the red value had to be greater then the threshold set by the seakbar, while the blue and green values needed to ne less then the thresholds set by the seek bar. The result was that the camera was able to accurately track the brown line, while eliminating the green background. Based on the COM values of the bottom two points (shown in red in app3.jpg) the OC1RS and OC2RS values were set appropriately to have t orobot drive straight, turn left or turn right. These two integers were sent to the pic which then set the motor speeds.
+
+There we no issues with the app following the line, but the motion of the robot was a bit jerky. This is due to the fact that the speed at which each motor was set was not refined and the robot would turn too far in response to a change in the line. Ocassionally the robot would loose the line and the COM values would jump to the center of the screen. Code was written such that should this occur the robot would turn left until finding the line again. This worked quite well and the robot was reliably able to re-find the line (though at the cost of time).
+
+Robot
+See images robot1.jpg, robot2.jpg, and robot3.jpg.
+
+Future Work
+Given more time (and less work from other classes) I would have experimented with various motor speed setting such that the robot was less likely to loose the line and follow the track more smoothly. Additionally, I had initially intended on having the top of the robot be a 2D living hinge such that it would bend in both directions and look more like whale. Time contraints made determining the appropriate wood-to-space ratio for 2-directional bending implausible, so a 1D hinge was used instead.
